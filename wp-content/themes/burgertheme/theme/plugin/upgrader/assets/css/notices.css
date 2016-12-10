@@ -1,0 +1,33 @@
+.ct-notice {
+    position: relative;
+    border-left-color: #a94442 !important;
+    overflow: hidden;
+    background-color: #f2dede !important;
+    color: #a94442;
+    padding: 40px !important;
+}
+
+.ct-notice p{
+    font-size: 20px;
+}
+
+.ct-notice a.button-primary {
+    background: #147EBD;
+    border-color: #13689c;
+    -webkit-box-shadow: inset 0 1px 0 rgba(19, 104, 156, 0.25), 0 1px 0 rgba(0, 0, 0, .15);
+    box-shadow: inset 0 1px 0 rgba(0, 34, 255, 0.25), 0 1px 0 rgba(0, 0, 0, .15);
+    color: #fff;
+    text-decoration: none !important
+}
+
+.ct-notice a.button-primary:hover {
+    background: #147EBD;
+    border-color: #13689c;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 135, 68, 0.25), 0 1px 0 rgba(0, 0, 0, .15);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 1px 0 rgba(0, 0, 0, .15)
+}
+
+.ct-notice a.button-primary {
+    background: #147EBD;
+    border-color: #13689c;
+}

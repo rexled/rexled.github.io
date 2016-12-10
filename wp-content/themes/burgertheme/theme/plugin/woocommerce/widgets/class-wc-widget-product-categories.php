@@ -1,0 +1,122 @@
+<?php
+/**
+ * Product Categories Widget
+ *
+ * @author 		WooThemes
+ * @category 	Widgets
+ * @package 	WooCommerce/Widgets
+ * @version 	1.6.4
+ * @extends 	WP_Widget
+ */
+
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+class Custom_WC_Widget_Product_Categories extends WC_Widget_Product_Categories {
+
+	/**
+		 * widget function.
+		 *
+		 * @see WP_Widget
+		 * @access public
+		 * @param array $args
+		 * @param array $instance
+		 * @return void
+		 */
+		function widget( $args, $instance ) {
+			extract( $args );
+
+            if (isset($instance['top']) && $instance['top']==true){
+                $title = apply_filters('widget_title', '', $instance, $this->id_base);
+
+            }else{
+                $title = apply_filters('widget_title', empty( $instance['title'] ) ? __( 'Product Categories', 'woocommerce' ) : $instance['title'], $instance, $this->id_base);
+
+            }
+			$c = $instance['count'] ? '1' : '0';
+			$h = $instance['hierarchical'] ? true : false;
+			$s = (isset($instance['show_children_only']) && $instance['show_children_only']) ? '1' : '0';
+			$d = $instance['dropdown'] ? '1' : '0';
+			$o = isset($instance['orderby']) ? $instance['orderby'] : 'order';
+
+			echo $before_widget;
+			if ( $title ) echo $before_title . $title . $after_title;
+
+			$cat_args = array( 'show_count' => $c, 'hierarchical' => $h, 'taxonomy' => 'product_cat' );
+
+			$cat_args['menu_order'] = false;
+
+			if ( $o == 'order' ) {
+
+				$cat_args['menu_order'] = 'asc';
+
+			} else {
+
+				$cat_args['orderby'] = 'title';
+
+			}
+
+			if ( $d ) {
+
+				// Stuck with this until a fix for http://core.trac.wordpress.org/ticket/13258
+				woocommerce_product_dropdown_categories( $c, $h, 0, $o );
+
+				?>
+				<script type='text/javascript'>
+				/* <![CDATA[ */
+					var product_cat_dropdown = document.getElementById("dropdown_product_cat");
+					function onProductCatChange() {
+						if ( product_cat_dropdown.options[product_cat_dropdown.selectedIndex].value !=='' ) {
+							location.href = "<?php echo home_url(); ?>/?product_cat="+product_cat_dropdown.options[product_cat_dropdown.selectedIndex].value;
+						}
+					}
+					product_cat_dropdown.onchange = onProductCatChange;
+				/* ]]> */
+				</script>
+				<?php
+
+			} else {
+
+				global $wp_query, $post, $woocommerce;
+
+				$this->current_cat = false;
+				$this->cat_ancestors = array();
+
+				if ( is_tax('product_cat') ) {
+
+					$this->current_cat = $wp_query->queried_object;
+					$this->cat_ancestors = get_ancestors( $this->current_cat->term_id, 'product_cat' );
+
+				} elseif ( is_singular('product') ) {
+
+					$product_category = wp_get_post_terms( $post->ID, 'product_cat', array( 'orderby' => 'parent' ) );
+
+					if ( $product_category ) {
+						$this->current_cat   = end( $product_category );
+						$this->cat_ancestors = get_ancestors( $this->current_cat->term_id, 'product_cat' );
+					}
+
+				}
+
+				//include_once( $woocommerce->plugin_path() . '/classes/walkers/class-product-cat-list-walker.php' );
+                include_once( get_template_directory() . '/woocommerce/walkers/class-product-cat-list-walker.php' );
+
+				$cat_args['walker'] 			= new Custom_WC_Product_Cat_List_Walker;
+				$cat_args['title_li'] 			= '';
+				$cat_args['show_children_only']	= ( isset( $instance['show_children_only'] ) && $instance['show_children_only'] ) ? 1 : 0;
+				$cat_args['pad_counts'] 		= 1;
+				$cat_args['show_option_none'] 	= __('No product categories exist.', 'woocommerce' );
+				$cat_args['current_category']	= ( $this->current_cat ) ? $this->current_cat->term_id : '';
+				$cat_args['current_category_ancestors']	= $this->cat_ancestors;
+
+				echo '<ul class="product-categories">';
+
+				wp_list_categories( apply_filters( 'woocommerce_product_categories_widget_args', $cat_args ) );
+
+				echo '</ul>';
+
+			}
+
+			echo $after_widget;
+		}
+
+}
